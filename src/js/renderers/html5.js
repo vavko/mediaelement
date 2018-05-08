@@ -144,6 +144,7 @@ const HtmlMediaElement = {
 					node.load();
 					node.play();
 				} else {
+					mediaElement.options.error(mediaElement);
 					mediaElement.generateError('Media error: Format(s) not supported or source(s) not found', mediaFiles);
 				}
 			}
