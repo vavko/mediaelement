@@ -47,7 +47,7 @@ export default class DefaultPlayer {
 	get duration () {
 		return this.getDuration();
 	}
-	
+
 	get remainingTime() {
 		return (this.getDuration() - this.currentTime());
 	}
@@ -69,7 +69,7 @@ export default class DefaultPlayer {
 	}
 
 	play () {
-		this.media.play();
+		return this.media.play();
 	}
 
 	pause () {
