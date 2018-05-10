@@ -5062,7 +5062,8 @@ var MediaElementPlayer = function () {
 	}, {
 		key: 'play',
 		value: function play() {
-			this.proxy.play();
+
+			return this.proxy.play();
 		}
 	}, {
 		key: 'pause',
@@ -5342,7 +5343,7 @@ var DefaultPlayer = function () {
 	_createClass(DefaultPlayer, [{
 		key: 'play',
 		value: function play() {
-			this.media.play();
+			return this.media.play();
 		}
 	}, {
 		key: 'pause',
