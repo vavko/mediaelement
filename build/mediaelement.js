@@ -56,7 +56,7 @@ module.exports = win;
   var setTimeoutFunc = setTimeout;
 
   function noop() {}
-  
+
   // Polyfill for Function.prototype.bind
   function bind(fn, thisArg) {
     return function () {
@@ -274,7 +274,7 @@ module.exports = win;
   Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
     Promise._unhandledRejectionFn = fn;
   };
-  
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Promise;
   } else if (!root.Promise) {
@@ -554,7 +554,7 @@ exports.default = i18n;
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+    value: true
 });
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -584,417 +584,419 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var MediaElement = function MediaElement(idOrNode, options, sources) {
-	var _this = this;
-
-	_classCallCheck(this, MediaElement);
-
-	var t = this;
-
-	sources = Array.isArray(sources) ? sources : null;
-
-	t.defaults = {
-		renderers: [],
-
-		fakeNodeName: 'mediaelementwrapper',
-
-		pluginPath: 'build/',
-
-		shimScriptAccess: 'sameDomain'
-	};
-
-	options = Object.assign(t.defaults, options);
-
-	t.mediaElement = _document2.default.createElement(options.fakeNodeName);
-
-	var id = idOrNode,
-	    error = false;
-
-	if (typeof idOrNode === 'string') {
-		t.mediaElement.originalNode = _document2.default.getElementById(idOrNode);
-	} else {
-		t.mediaElement.originalNode = idOrNode;
-		id = idOrNode.id;
-	}
-
-	if (t.mediaElement.originalNode === undefined || t.mediaElement.originalNode === null) {
-		return null;
-	}
-
-	t.mediaElement.options = options;
-	id = id || 'mejs_' + Math.random().toString().slice(2);
-
-	t.mediaElement.originalNode.setAttribute('id', id + '_from_mejs');
-
-	var tagName = t.mediaElement.originalNode.tagName.toLowerCase();
-	if (['video', 'audio'].indexOf(tagName) > -1 && !t.mediaElement.originalNode.getAttribute('preload')) {
-		t.mediaElement.originalNode.setAttribute('preload', 'none');
-	}
-
-	t.mediaElement.originalNode.parentNode.insertBefore(t.mediaElement, t.mediaElement.originalNode);
-
-	t.mediaElement.appendChild(t.mediaElement.originalNode);
-
-	var processURL = function processURL(url, type) {
-		if (_window2.default.location.protocol === 'https:' && url.indexOf('http:') === 0 && _constants.IS_IOS && _mejs2.default.html5media.mediaTypes.indexOf(type) > -1) {
-			var xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function () {
-				if (this.readyState === 4 && this.status === 200) {
-					var _url = _window2.default.URL || _window2.default.webkitURL,
-					    blobUrl = _url.createObjectURL(this.response);
-					t.mediaElement.originalNode.setAttribute('src', blobUrl);
-					return blobUrl;
-				}
-				return url;
-			};
-			xhr.open('GET', url);
-			xhr.responseType = 'blob';
-			xhr.send();
-		}
-
-		return url;
-	};
-
-	var mediaFiles = void 0;
-
-	if (sources !== null) {
-		mediaFiles = sources;
-	} else if (t.mediaElement.originalNode !== null) {
-
-		mediaFiles = [];
-
-		switch (t.mediaElement.originalNode.nodeName.toLowerCase()) {
-			case 'iframe':
-				mediaFiles.push({
-					type: '',
-					src: t.mediaElement.originalNode.getAttribute('src')
-				});
-				break;
-			case 'audio':
-			case 'video':
-				var _sources = t.mediaElement.originalNode.children.length,
-				    nodeSource = t.mediaElement.originalNode.getAttribute('src');
-
-				if (nodeSource) {
-					var node = t.mediaElement.originalNode,
-					    type = (0, _media2.formatType)(nodeSource, node.getAttribute('type'));
-					mediaFiles.push({
-						type: type,
-						src: processURL(nodeSource, type)
-					});
-				}
-
-				for (var i = 0; i < _sources; i++) {
-					var n = t.mediaElement.originalNode.children[i];
-					if (n.tagName.toLowerCase() === 'source') {
-						var src = n.getAttribute('src'),
-						    _type = (0, _media2.formatType)(src, n.getAttribute('type'));
-						mediaFiles.push({ type: _type, src: processURL(src, _type) });
-					}
-				}
-				break;
-		}
-	}
-
-	t.mediaElement.id = id;
-	t.mediaElement.renderers = {};
-	t.mediaElement.events = {};
-	t.mediaElement.promises = [];
-	t.mediaElement.renderer = null;
-	t.mediaElement.rendererName = null;
-
-	t.mediaElement.changeRenderer = function (rendererName, mediaFiles) {
-
-		var t = _this,
-		    media = Object.keys(mediaFiles[0]).length > 2 ? mediaFiles[0] : mediaFiles[0].src;
-
-		if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && t.mediaElement.renderer.name === rendererName) {
-			t.mediaElement.renderer.pause();
-			if (t.mediaElement.renderer.stop) {
-				t.mediaElement.renderer.stop();
-			}
-			t.mediaElement.renderer.show();
-			t.mediaElement.renderer.setSrc(media);
-			return true;
-		}
-
-		if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null) {
-			t.mediaElement.renderer.pause();
-			if (t.mediaElement.renderer.stop) {
-				t.mediaElement.renderer.stop();
-			}
-			t.mediaElement.renderer.hide();
-		}
-
-		var newRenderer = t.mediaElement.renderers[rendererName],
-		    newRendererType = null;
-
-		if (newRenderer !== undefined && newRenderer !== null) {
-			newRenderer.show();
-			newRenderer.setSrc(media);
-			t.mediaElement.renderer = newRenderer;
-			t.mediaElement.rendererName = rendererName;
-			return true;
-		}
-
-		var rendererArray = t.mediaElement.options.renderers.length ? t.mediaElement.options.renderers : _renderer.renderer.order;
-
-		for (var _i = 0, total = rendererArray.length; _i < total; _i++) {
-			var index = rendererArray[_i];
-
-			if (index === rendererName) {
-				var rendererList = _renderer.renderer.renderers;
-				newRendererType = rendererList[index];
-
-				var renderOptions = Object.assign(newRendererType.options, t.mediaElement.options);
-				newRenderer = newRendererType.create(t.mediaElement, renderOptions, mediaFiles);
-				newRenderer.name = rendererName;
-
-				t.mediaElement.renderers[newRendererType.name] = newRenderer;
-				t.mediaElement.renderer = newRenderer;
-				t.mediaElement.rendererName = rendererName;
-				newRenderer.show();
-				return true;
-			}
-		}
-
-		return false;
-	};
-
-	t.mediaElement.setSize = function (width, height) {
-		if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null) {
-			t.mediaElement.renderer.setSize(width, height);
-		}
-	};
-
-	t.mediaElement.generateError = function (message, urlList) {
-		message = message || '';
-		urlList = Array.isArray(urlList) ? urlList : [];
-		var event = (0, _general.createEvent)('error', t.mediaElement);
-		event.message = message;
-		event.urls = urlList;
-		t.mediaElement.dispatchEvent(event);
-		error = true;
-	};
-
-	var props = _mejs2.default.html5media.properties,
-	    methods = _mejs2.default.html5media.methods,
-	    addProperty = function addProperty(obj, name, onGet, onSet) {
-		var oldValue = obj[name];
-		var getFn = function getFn() {
-			return onGet.apply(obj, [oldValue]);
-		},
-		    setFn = function setFn(newValue) {
-			oldValue = onSet.apply(obj, [newValue]);
-			return oldValue;
-		};
-
-		Object.defineProperty(obj, name, {
-			get: getFn,
-			set: setFn
-		});
-	},
-	    assignGettersSetters = function assignGettersSetters(propName) {
-		if (propName !== 'src') {
-
-			var capName = '' + propName.substring(0, 1).toUpperCase() + propName.substring(1),
-			    getFn = function getFn() {
-				return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['get' + capName] === 'function' ? t.mediaElement.renderer['get' + capName]() : null;
-			},
-			    setFn = function setFn(value) {
-				if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['set' + capName] === 'function') {
-					t.mediaElement.renderer['set' + capName](value);
-				}
-			};
-
-			addProperty(t.mediaElement, propName, getFn, setFn);
-			t.mediaElement['get' + capName] = getFn;
-			t.mediaElement['set' + capName] = setFn;
-		}
-	},
-	    getSrc = function getSrc() {
-		return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null ? t.mediaElement.renderer.getSrc() : null;
-	},
-	    setSrc = function setSrc(value) {
-		var mediaFiles = [];
-
-		if (typeof value === 'string') {
-			mediaFiles.push({
-				src: value,
-				type: value ? (0, _media2.getTypeFromFile)(value) : ''
-			});
-		} else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.src !== undefined) {
-			var _src = (0, _media2.absolutizeUrl)(value.src),
-			    _type2 = value.type,
-			    media = Object.assign(value, {
-				src: _src,
-				type: (_type2 === '' || _type2 === null || _type2 === undefined) && _src ? (0, _media2.getTypeFromFile)(_src) : _type2
-			});
-			mediaFiles.push(media);
-		} else if (Array.isArray(value)) {
-			for (var _i2 = 0, total = value.length; _i2 < total; _i2++) {
-
-				var _src2 = (0, _media2.absolutizeUrl)(value[_i2].src),
-				    _type3 = value[_i2].type,
-				    _media = Object.assign(value[_i2], {
-					src: _src2,
-					type: (_type3 === '' || _type3 === null || _type3 === undefined) && _src2 ? (0, _media2.getTypeFromFile)(_src2) : _type3
-				});
-
-				mediaFiles.push(_media);
-			}
-		}
-
-		var renderInfo = _renderer.renderer.select(mediaFiles, t.mediaElement.options.renderers.length ? t.mediaElement.options.renderers : []),
-		    event = void 0;
-
-		if (!t.mediaElement.paused) {
-			t.mediaElement.pause();
-			event = (0, _general.createEvent)('pause', t.mediaElement);
-			t.mediaElement.dispatchEvent(event);
-		}
-		t.mediaElement.originalNode.src = mediaFiles[0].src || '';
-
-		if (renderInfo === null && mediaFiles[0].src) {
-			t.mediaElement.generateError('No renderer found', mediaFiles);
-			return;
-		}
-
-		return mediaFiles[0].src ? t.mediaElement.changeRenderer(renderInfo.rendererName, mediaFiles) : null;
-	},
-	    triggerAction = function triggerAction(methodName, args) {
-		try {
-			if (methodName === 'play' && t.mediaElement.rendererName === 'native_dash') {
-				var response = t.mediaElement.renderer[methodName](args);
-				if (response && typeof response.then === 'function') {
-					response.catch(function () {
-						if (t.mediaElement.paused) {
-							setTimeout(function () {
-								var tmpResponse = t.mediaElement.renderer.play();
-								if (tmpResponse !== undefined) {
-									tmpResponse.catch(function () {
-										if (!t.mediaElement.renderer.paused) {
-											t.mediaElement.renderer.pause();
-										}
-									});
-								}
-							}, 150);
-						}
-					});
-				}
-			} else {
-				t.mediaElement.renderer[methodName](args);
-			}
-		} catch (e) {
-			t.mediaElement.generateError(e, mediaFiles);
-		}
-	},
-	    assignMethods = function assignMethods(methodName) {
-		t.mediaElement[methodName] = function () {
-			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-				args[_key] = arguments[_key];
-			}
-
-			if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer[methodName] === 'function') {
-				if (t.mediaElement.promises.length) {
-					Promise.all(t.mediaElement.promises).then(function () {
-						triggerAction(methodName, args);
-					}).catch(function (e) {
-						t.mediaElement.generateError(e, mediaFiles);
-					});
-				} else {
-					triggerAction(methodName, args);
-				}
-			}
-			return null;
-		};
-	};
-
-	addProperty(t.mediaElement, 'src', getSrc, setSrc);
-	t.mediaElement.getSrc = getSrc;
-	t.mediaElement.setSrc = setSrc;
-
-	for (var _i3 = 0, total = props.length; _i3 < total; _i3++) {
-		assignGettersSetters(props[_i3]);
-	}
-
-	for (var _i4 = 0, _total = methods.length; _i4 < _total; _i4++) {
-		assignMethods(methods[_i4]);
-	}
-
-	t.mediaElement.addEventListener = function (eventName, callback) {
-		t.mediaElement.events[eventName] = t.mediaElement.events[eventName] || [];
-
-		t.mediaElement.events[eventName].push(callback);
-	};
-	t.mediaElement.removeEventListener = function (eventName, callback) {
-		if (!eventName) {
-			t.mediaElement.events = {};
-			return true;
-		}
-
-		var callbacks = t.mediaElement.events[eventName];
-
-		if (!callbacks) {
-			return true;
-		}
-
-		if (!callback) {
-			t.mediaElement.events[eventName] = [];
-			return true;
-		}
-
-		for (var _i5 = 0; _i5 < callbacks.length; _i5++) {
-			if (callbacks[_i5] === callback) {
-				t.mediaElement.events[eventName].splice(_i5, 1);
-				return true;
-			}
-		}
-		return false;
-	};
-
-	t.mediaElement.dispatchEvent = function (event) {
-		var callbacks = t.mediaElement.events[event.type];
-		if (callbacks) {
-			for (var _i6 = 0; _i6 < callbacks.length; _i6++) {
-				callbacks[_i6].apply(null, [event]);
-			}
-		}
-	};
-
-	t.mediaElement.destroy = function () {
-		var mediaElement = t.mediaElement.originalNode.cloneNode(true);
-		var wrapper = t.mediaElement.parentElement;
-		mediaElement.removeAttribute('id');
-		mediaElement.remove();
-		t.mediaElement.remove();
-		wrapper.append(mediaElement);
-	};
-
-	if (mediaFiles.length) {
-		t.mediaElement.src = mediaFiles;
-	}
-
-	if (t.mediaElement.promises.length) {
-		Promise.all(t.mediaElement.promises).then(function () {
-			if (t.mediaElement.options.success) {
-				t.mediaElement.options.success(t.mediaElement, t.mediaElement.originalNode);
-			}
-		}).catch(function () {
-			if (error && t.mediaElement.options.error) {
-				t.mediaElement.options.error(t.mediaElement, t.mediaElement.originalNode);
-			}
-		});
-	} else {
-		if (t.mediaElement.options.success) {
-			t.mediaElement.options.success(t.mediaElement, t.mediaElement.originalNode);
-		}
-
-		if (error && t.mediaElement.options.error) {
-			t.mediaElement.options.error(t.mediaElement, t.mediaElement.originalNode);
-		}
-	}
-
-	return t.mediaElement;
+    var _this = this;
+
+    _classCallCheck(this, MediaElement);
+
+    var t = this;
+
+    sources = Array.isArray(sources) ? sources : null;
+
+    t.defaults = {
+        renderers: [],
+
+        fakeNodeName: 'mediaelementwrapper',
+
+        pluginPath: 'build/',
+
+        shimScriptAccess: 'sameDomain'
+    };
+
+    options = Object.assign(t.defaults, options);
+
+    t.mediaElement = _document2.default.createElement(options.fakeNodeName);
+
+    var id = idOrNode,
+        error = false;
+
+    if (typeof idOrNode === 'string') {
+        t.mediaElement.originalNode = _document2.default.getElementById(idOrNode);
+    } else {
+        t.mediaElement.originalNode = idOrNode;
+        id = idOrNode.id;
+    }
+
+    if (t.mediaElement.originalNode === undefined || t.mediaElement.originalNode === null) {
+        return null;
+    }
+
+    t.mediaElement.options = options;
+    id = id || 'mejs_' + Math.random().toString().slice(2);
+
+    t.mediaElement.originalNode.setAttribute('id', id + '_from_mejs');
+
+    var tagName = t.mediaElement.originalNode.tagName.toLowerCase();
+    if (['video', 'audio'].indexOf(tagName) > -1 && !t.mediaElement.originalNode.getAttribute('preload')) {
+        t.mediaElement.originalNode.setAttribute('preload', 'none');
+    }
+
+    t.mediaElement.originalNode.parentNode.insertBefore(t.mediaElement, t.mediaElement.originalNode);
+
+    t.mediaElement.appendChild(t.mediaElement.originalNode);
+
+    var processURL = function processURL(url, type) {
+        if (_window2.default.location.protocol === 'https:' && url.indexOf('http:') === 0 && _constants.IS_IOS && _mejs2.default.html5media.mediaTypes.indexOf(type) > -1) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    var _url = _window2.default.URL || _window2.default.webkitURL,
+                        blobUrl = _url.createObjectURL(this.response);
+                    t.mediaElement.originalNode.setAttribute('src', blobUrl);
+                    return blobUrl;
+                }
+                return url;
+            };
+            xhr.open('GET', url);
+            xhr.responseType = 'blob';
+            xhr.send();
+        }
+
+        return url;
+    };
+
+    var mediaFiles = void 0;
+
+    if (sources !== null) {
+        mediaFiles = sources;
+    } else if (t.mediaElement.originalNode !== null) {
+
+        mediaFiles = [];
+
+        switch (t.mediaElement.originalNode.nodeName.toLowerCase()) {
+            case 'iframe':
+                mediaFiles.push({
+                    type: '',
+                    src: t.mediaElement.originalNode.getAttribute('src')
+                });
+                break;
+            case 'audio':
+            case 'video':
+                var _sources = t.mediaElement.originalNode.children.length,
+                    nodeSource = t.mediaElement.originalNode.getAttribute('src');
+
+                if (nodeSource) {
+                    var node = t.mediaElement.originalNode,
+                        type = (0, _media2.formatType)(nodeSource, node.getAttribute('type'));
+                    mediaFiles.push({
+                        type: type,
+                        src: processURL(nodeSource, type)
+                    });
+                }
+
+                for (var i = 0; i < _sources; i++) {
+                    var n = t.mediaElement.originalNode.children[i];
+                    if (n.tagName.toLowerCase() === 'source') {
+                        var src = n.getAttribute('src'),
+                            _type = (0, _media2.formatType)(src, n.getAttribute('type'));
+                        mediaFiles.push({type: _type, src: processURL(src, _type)});
+                    }
+                }
+                break;
+        }
+    }
+
+    t.mediaElement.id = id;
+    t.mediaElement.renderers = {};
+    t.mediaElement.events = {};
+    t.mediaElement.promises = [];
+    t.mediaElement.renderer = null;
+    t.mediaElement.rendererName = null;
+
+    t.mediaElement.changeRenderer = function (rendererName, mediaFiles) {
+
+        var t = _this,
+            media = Object.keys(mediaFiles[0]).length > 2 ? mediaFiles[0] : mediaFiles[0].src;
+
+        if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && t.mediaElement.renderer.name === rendererName) {
+            t.mediaElement.renderer.pause();
+            if (t.mediaElement.renderer.stop) {
+                t.mediaElement.renderer.stop();
+            }
+
+            t.mediaElement.renderer.show();
+            t.mediaElement.renderer.setSrc(media);
+            return true;
+        }
+
+        if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null) {
+            t.mediaElement.renderer.pause();
+            if (t.mediaElement.renderer.stop) {
+                t.mediaElement.renderer.stop();
+            }
+            t.mediaElement.renderer.hide();
+        }
+
+        var newRenderer = t.mediaElement.renderers[rendererName],
+            newRendererType = null;
+
+        if (newRenderer !== undefined && newRenderer !== null) {
+            newRenderer.show();
+            newRenderer.setSrc(media);
+            t.mediaElement.renderer = newRenderer;
+            t.mediaElement.rendererName = rendererName;
+            return true;
+        }
+
+        var rendererArray = t.mediaElement.options.renderers.length ? t.mediaElement.options.renderers : _renderer.renderer.order;
+
+        for (var _i = 0, total = rendererArray.length; _i < total; _i++) {
+            var index = rendererArray[_i];
+
+            if (index === rendererName) {
+                var rendererList = _renderer.renderer.renderers;
+                newRendererType = rendererList[index];
+
+                var renderOptions = Object.assign(newRendererType.options, t.mediaElement.options);
+                newRenderer = newRendererType.create(t.mediaElement, renderOptions, mediaFiles);
+                newRenderer.name = rendererName;
+
+                t.mediaElement.renderers[newRendererType.name] = newRenderer;
+                t.mediaElement.renderer = newRenderer;
+                t.mediaElement.rendererName = rendererName;
+                newRenderer.show();
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    t.mediaElement.setSize = function (width, height) {
+        if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null) {
+            t.mediaElement.renderer.setSize(width, height);
+        }
+    };
+
+    t.mediaElement.generateError = function (message, urlList) {
+        message = message || '';
+        urlList = Array.isArray(urlList) ? urlList : [];
+        var event = (0, _general.createEvent)('error', t.mediaElement);
+        event.message = message;
+        event.urls = urlList;
+        t.mediaElement.dispatchEvent(event);
+        error = true;
+    };
+
+    var props = _mejs2.default.html5media.properties,
+        methods = _mejs2.default.html5media.methods,
+        addProperty = function addProperty(obj, name, onGet, onSet) {
+            var oldValue = obj[name];
+            var getFn = function getFn() {
+                    return onGet.apply(obj, [oldValue]);
+                },
+                setFn = function setFn(newValue) {
+                    oldValue = onSet.apply(obj, [newValue]);
+                    return oldValue;
+                };
+
+            Object.defineProperty(obj, name, {
+                get: getFn,
+                set: setFn
+            });
+        },
+        assignGettersSetters = function assignGettersSetters(propName) {
+            if (propName !== 'src') {
+
+                var capName = '' + propName.substring(0, 1).toUpperCase() + propName.substring(1),
+                    getFn = function getFn() {
+                        return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['get' + capName] === 'function' ? t.mediaElement.renderer['get' + capName]() : null;
+                    },
+                    setFn = function setFn(value) {
+                        if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['set' + capName] === 'function') {
+                            t.mediaElement.renderer['set' + capName](value);
+                        }
+                    };
+
+                addProperty(t.mediaElement, propName, getFn, setFn);
+                t.mediaElement['get' + capName] = getFn;
+                t.mediaElement['set' + capName] = setFn;
+            }
+        },
+        getSrc = function getSrc() {
+            return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null ? t.mediaElement.renderer.getSrc() : null;
+        },
+        setSrc = function setSrc(value) {
+            var mediaFiles = [];
+
+            if (typeof value === 'string') {
+                mediaFiles.push({
+                    src: value,
+                    type: value ? (0, _media2.getTypeFromFile)(value) : ''
+                });
+            } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.src !== undefined) {
+                var _src = (0, _media2.absolutizeUrl)(value.src),
+                    _type2 = value.type,
+                    media = Object.assign(value, {
+                        src: _src,
+                        type: (_type2 === '' || _type2 === null || _type2 === undefined) && _src ? (0, _media2.getTypeFromFile)(_src) : _type2
+                    });
+                mediaFiles.push(media);
+            } else if (Array.isArray(value)) {
+                for (var _i2 = 0, total = value.length; _i2 < total; _i2++) {
+
+                    var _src2 = (0, _media2.absolutizeUrl)(value[_i2].src),
+                        _type3 = value[_i2].type,
+                        _media = Object.assign(value[_i2], {
+                            src: _src2,
+                            type: (_type3 === '' || _type3 === null || _type3 === undefined) && _src2 ? (0, _media2.getTypeFromFile)(_src2) : _type3
+                        });
+
+                    mediaFiles.push(_media);
+                }
+            }
+
+            var renderInfo = _renderer.renderer.select(mediaFiles, t.mediaElement.options.renderers.length ? t.mediaElement.options.renderers : []),
+                event = void 0;
+
+            if (!t.mediaElement.paused) {
+                t.mediaElement.pause();
+                event = (0, _general.createEvent)('pause', t.mediaElement);
+                t.mediaElement.dispatchEvent(event);
+            }
+            t.mediaElement.originalNode.src = mediaFiles[0].src || '';
+
+            if (renderInfo === null && mediaFiles[0].src) {
+                t.mediaElement.generateError('No renderer found', mediaFiles);
+                return;
+            }
+
+            return mediaFiles[0].src ? t.mediaElement.changeRenderer(renderInfo.rendererName, mediaFiles) : null;
+        },
+        triggerAction = function triggerAction(methodName, args) {
+            try {
+                if (methodName === 'play' && t.mediaElement.rendererName === 'native_dash') {
+                    var response = t.mediaElement.renderer[methodName](args);
+                    if (response && typeof response.then === 'function') {
+                        response.catch(function () {
+                            if (t.mediaElement.paused) {
+                                setTimeout(function () {
+                                    var tmpResponse = t.mediaElement.renderer.play();
+                                    if (tmpResponse !== undefined) {
+                                        tmpResponse.catch(function () {
+                                            if (!t.mediaElement.renderer.paused) {
+                                                t.mediaElement.renderer.pause();
+                                            }
+                                        });
+                                    }
+                                }, 150);
+                            }
+                        });
+                    }
+                } else {
+                    if (methodName === 'play') return t.mediaElement.renderer[methodName](args);
+                    t.mediaElement.renderer[methodName](args);
+                }
+            } catch (e) {
+                t.mediaElement.generateError(e, mediaFiles);
+            }
+        },
+        assignMethods = function assignMethods(methodName) {
+            t.mediaElement[methodName] = function () {
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                    args[_key] = arguments[_key];
+                }
+
+                if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer[methodName] === 'function') {
+                    if (t.mediaElement.promises.length) {
+                        Promise.all(t.mediaElement.promises).then(function () {
+                            return triggerAction(methodName, args);
+                        }).catch(function (e) {
+                            t.mediaElement.generateError(e, mediaFiles);
+                        });
+                    } else {
+                        return triggerAction(methodName, args);
+                    }
+                }
+                return null;
+            };
+        };
+
+    addProperty(t.mediaElement, 'src', getSrc, setSrc);
+    t.mediaElement.getSrc = getSrc;
+    t.mediaElement.setSrc = setSrc;
+
+    for (var _i3 = 0, total = props.length; _i3 < total; _i3++) {
+        assignGettersSetters(props[_i3]);
+    }
+
+    for (var _i4 = 0, _total = methods.length; _i4 < _total; _i4++) {
+        assignMethods(methods[_i4]);
+    }
+
+    t.mediaElement.addEventListener = function (eventName, callback) {
+        t.mediaElement.events[eventName] = t.mediaElement.events[eventName] || [];
+
+        t.mediaElement.events[eventName].push(callback);
+    };
+    t.mediaElement.removeEventListener = function (eventName, callback) {
+        if (!eventName) {
+            t.mediaElement.events = {};
+            return true;
+        }
+
+        var callbacks = t.mediaElement.events[eventName];
+
+        if (!callbacks) {
+            return true;
+        }
+
+        if (!callback) {
+            t.mediaElement.events[eventName] = [];
+            return true;
+        }
+
+        for (var _i5 = 0; _i5 < callbacks.length; _i5++) {
+            if (callbacks[_i5] === callback) {
+                t.mediaElement.events[eventName].splice(_i5, 1);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    t.mediaElement.dispatchEvent = function (event) {
+        var callbacks = t.mediaElement.events[event.type];
+        if (callbacks) {
+            for (var _i6 = 0; _i6 < callbacks.length; _i6++) {
+                callbacks[_i6].apply(null, [event]);
+            }
+        }
+    };
+
+    t.mediaElement.destroy = function () {
+        var mediaElement = t.mediaElement.originalNode.cloneNode(true);
+        var wrapper = t.mediaElement.parentElement;
+        mediaElement.removeAttribute('id');
+        mediaElement.remove();
+        t.mediaElement.remove();
+        wrapper.append(mediaElement);
+    };
+
+    if (mediaFiles.length) {
+        t.mediaElement.src = mediaFiles;
+    }
+
+    if (t.mediaElement.promises.length) {
+        Promise.all(t.mediaElement.promises).then(function () {
+            if (t.mediaElement.options.success) {
+                t.mediaElement.options.success(t.mediaElement, t.mediaElement.originalNode);
+            }
+        }).catch(function () {
+            if (error && t.mediaElement.options.error) {
+                t.mediaElement.options.error(t.mediaElement, t.mediaElement.originalNode);
+            }
+        });
+    } else {
+        if (t.mediaElement.options.success) {
+            t.mediaElement.options.success(t.mediaElement, t.mediaElement.originalNode);
+        }
+
+        if (error && t.mediaElement.options.error) {
+            t.mediaElement.options.error(t.mediaElement, t.mediaElement.originalNode);
+        }
+    }
+
+    return t.mediaElement;
 };
 
 _window2.default.MediaElement = MediaElement;
@@ -1559,7 +1561,7 @@ var PluginDetector = exports.PluginDetector = {
 					version = axDetect(ax);
 				}
 			} catch (e) {
-				
+                console.log(e);
 			}
 		}
 		return version;
@@ -1630,7 +1632,7 @@ var FlashMediaElementRenderer = {
 					try {
 						flash.flashApi['set_' + propName](value);
 					} catch (e) {
-						
+                        console.log(e);
 					}
 				} else {
 					flash.flashApiStack.push({
@@ -1655,10 +1657,10 @@ var FlashMediaElementRenderer = {
 							try {
 								flash.flashApi['fire_' + methodName]();
 							} catch (e) {
-								
+                                console.log(e);
 							}
 						} else {
-							
+                            console.log('flash', 'missing method', methodName);
 						}
 					} else {
 						flash.flashApiStack.push({
@@ -2876,7 +2878,7 @@ var YouTubeIframeRenderer = {
 							mediaElement.dispatchEvent(event);
 							break;
 						default:
-							
+                            console.log('youtube ' + youtube.id, propName, 'UNSUPPORTED property');
 							break;
 					}
 				} else {

@@ -196,7 +196,7 @@ var vimeoIframeRenderer = {
 							mediaElement.dispatchEvent(event);
 							break;
 						default:
-							
+							console.log('vimeo ' + vimeo.id, propName, 'UNSUPPORTED property');
 							break;
 					}
 				} else {

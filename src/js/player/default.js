@@ -69,6 +69,7 @@ export default class DefaultPlayer {
 	}
 
 	play () {
+        console.log("Running!");
 		return this.media.play();
 	}
 
