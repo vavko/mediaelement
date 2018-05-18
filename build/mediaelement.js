@@ -56,7 +56,7 @@ module.exports = win;
   var setTimeoutFunc = setTimeout;
 
   function noop() {}
-
+  
   // Polyfill for Function.prototype.bind
   function bind(fn, thisArg) {
     return function () {
@@ -274,7 +274,7 @@ module.exports = win;
   Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
     Promise._unhandledRejectionFn = fn;
   };
-
+  
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Promise;
   } else if (!root.Promise) {
@@ -688,7 +688,7 @@ var MediaElement = function MediaElement(idOrNode, options, sources) {
                     if (n.tagName.toLowerCase() === 'source') {
                         var src = n.getAttribute('src'),
                             _type = (0, _media2.formatType)(src, n.getAttribute('type'));
-                        mediaFiles.push({type: _type, src: processURL(src, _type)});
+                        mediaFiles.push({ type: _type, src: processURL(src, _type) });
                     }
                 }
                 break;
@@ -780,136 +780,136 @@ var MediaElement = function MediaElement(idOrNode, options, sources) {
     var props = _mejs2.default.html5media.properties,
         methods = _mejs2.default.html5media.methods,
         addProperty = function addProperty(obj, name, onGet, onSet) {
-            var oldValue = obj[name];
-            var getFn = function getFn() {
-                    return onGet.apply(obj, [oldValue]);
-                },
-                setFn = function setFn(newValue) {
-                    oldValue = onSet.apply(obj, [newValue]);
-                    return oldValue;
-                };
-
-            Object.defineProperty(obj, name, {
-                get: getFn,
-                set: setFn
-            });
+        var oldValue = obj[name];
+        var getFn = function getFn() {
+            return onGet.apply(obj, [oldValue]);
         },
-        assignGettersSetters = function assignGettersSetters(propName) {
-            if (propName !== 'src') {
-
-                var capName = '' + propName.substring(0, 1).toUpperCase() + propName.substring(1),
-                    getFn = function getFn() {
-                        return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['get' + capName] === 'function' ? t.mediaElement.renderer['get' + capName]() : null;
-                    },
-                    setFn = function setFn(value) {
-                        if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['set' + capName] === 'function') {
-                            t.mediaElement.renderer['set' + capName](value);
-                        }
-                    };
-
-                addProperty(t.mediaElement, propName, getFn, setFn);
-                t.mediaElement['get' + capName] = getFn;
-                t.mediaElement['set' + capName] = setFn;
-            }
-        },
-        getSrc = function getSrc() {
-            return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null ? t.mediaElement.renderer.getSrc() : null;
-        },
-        setSrc = function setSrc(value) {
-            var mediaFiles = [];
-
-            if (typeof value === 'string') {
-                mediaFiles.push({
-                    src: value,
-                    type: value ? (0, _media2.getTypeFromFile)(value) : ''
-                });
-            } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.src !== undefined) {
-                var _src = (0, _media2.absolutizeUrl)(value.src),
-                    _type2 = value.type,
-                    media = Object.assign(value, {
-                        src: _src,
-                        type: (_type2 === '' || _type2 === null || _type2 === undefined) && _src ? (0, _media2.getTypeFromFile)(_src) : _type2
-                    });
-                mediaFiles.push(media);
-            } else if (Array.isArray(value)) {
-                for (var _i2 = 0, total = value.length; _i2 < total; _i2++) {
-
-                    var _src2 = (0, _media2.absolutizeUrl)(value[_i2].src),
-                        _type3 = value[_i2].type,
-                        _media = Object.assign(value[_i2], {
-                            src: _src2,
-                            type: (_type3 === '' || _type3 === null || _type3 === undefined) && _src2 ? (0, _media2.getTypeFromFile)(_src2) : _type3
-                        });
-
-                    mediaFiles.push(_media);
-                }
-            }
-
-            var renderInfo = _renderer.renderer.select(mediaFiles, t.mediaElement.options.renderers.length ? t.mediaElement.options.renderers : []),
-                event = void 0;
-
-            if (!t.mediaElement.paused) {
-                t.mediaElement.pause();
-                event = (0, _general.createEvent)('pause', t.mediaElement);
-                t.mediaElement.dispatchEvent(event);
-            }
-            t.mediaElement.originalNode.src = mediaFiles[0].src || '';
-
-            if (renderInfo === null && mediaFiles[0].src) {
-                t.mediaElement.generateError('No renderer found', mediaFiles);
-                return;
-            }
-
-            return mediaFiles[0].src ? t.mediaElement.changeRenderer(renderInfo.rendererName, mediaFiles) : null;
-        },
-        triggerAction = function triggerAction(methodName, args) {
-            try {
-                if (methodName === 'play' && t.mediaElement.rendererName === 'native_dash') {
-                    var response = t.mediaElement.renderer[methodName](args);
-                    if (response && typeof response.then === 'function') {
-                        response.catch(function () {
-                            if (t.mediaElement.paused) {
-                                setTimeout(function () {
-                                    var tmpResponse = t.mediaElement.renderer.play();
-                                    if (tmpResponse !== undefined) {
-                                        tmpResponse.catch(function () {
-                                            if (!t.mediaElement.renderer.paused) {
-                                                t.mediaElement.renderer.pause();
-                                            }
-                                        });
-                                    }
-                                }, 150);
-                            }
-                        });
-                    }
-                } else {
-                    if (methodName === 'play') return t.mediaElement.renderer[methodName](args);
-                    t.mediaElement.renderer[methodName](args);
-                }
-            } catch (e) {
-                t.mediaElement.generateError(e, mediaFiles);
-            }
-        },
-        assignMethods = function assignMethods(methodName) {
-            t.mediaElement[methodName] = function () {
-                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-                    args[_key] = arguments[_key];
-                }
-
-                if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer[methodName] === 'function') {
-                    if (t.mediaElement.promises.length) {
-                        Promise.all(t.mediaElement.promises).then(function () {
-                            return triggerAction(methodName, args);
-                        }).catch(function (e) {
-                            t.mediaElement.generateError(e, mediaFiles);
-                        });
-                    } else {
-                        return triggerAction(methodName, args);
-                    }
-                }
-                return null;
-            };
+            setFn = function setFn(newValue) {
+            oldValue = onSet.apply(obj, [newValue]);
+            return oldValue;
         };
+
+        Object.defineProperty(obj, name, {
+            get: getFn,
+            set: setFn
+        });
+    },
+        assignGettersSetters = function assignGettersSetters(propName) {
+        if (propName !== 'src') {
+
+            var capName = '' + propName.substring(0, 1).toUpperCase() + propName.substring(1),
+                getFn = function getFn() {
+                return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['get' + capName] === 'function' ? t.mediaElement.renderer['get' + capName]() : null;
+            },
+                setFn = function setFn(value) {
+                if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer['set' + capName] === 'function') {
+                    t.mediaElement.renderer['set' + capName](value);
+                }
+            };
+
+            addProperty(t.mediaElement, propName, getFn, setFn);
+            t.mediaElement['get' + capName] = getFn;
+            t.mediaElement['set' + capName] = setFn;
+        }
+    },
+        getSrc = function getSrc() {
+        return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null ? t.mediaElement.renderer.getSrc() : null;
+    },
+        setSrc = function setSrc(value) {
+        var mediaFiles = [];
+
+        if (typeof value === 'string') {
+            mediaFiles.push({
+                src: value,
+                type: value ? (0, _media2.getTypeFromFile)(value) : ''
+            });
+        } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.src !== undefined) {
+            var _src = (0, _media2.absolutizeUrl)(value.src),
+                _type2 = value.type,
+                media = Object.assign(value, {
+                src: _src,
+                type: (_type2 === '' || _type2 === null || _type2 === undefined) && _src ? (0, _media2.getTypeFromFile)(_src) : _type2
+            });
+            mediaFiles.push(media);
+        } else if (Array.isArray(value)) {
+            for (var _i2 = 0, total = value.length; _i2 < total; _i2++) {
+
+                var _src2 = (0, _media2.absolutizeUrl)(value[_i2].src),
+                    _type3 = value[_i2].type,
+                    _media = Object.assign(value[_i2], {
+                    src: _src2,
+                    type: (_type3 === '' || _type3 === null || _type3 === undefined) && _src2 ? (0, _media2.getTypeFromFile)(_src2) : _type3
+                });
+
+                mediaFiles.push(_media);
+            }
+        }
+
+        var renderInfo = _renderer.renderer.select(mediaFiles, t.mediaElement.options.renderers.length ? t.mediaElement.options.renderers : []),
+            event = void 0;
+
+        if (!t.mediaElement.paused) {
+            t.mediaElement.pause();
+            event = (0, _general.createEvent)('pause', t.mediaElement);
+            t.mediaElement.dispatchEvent(event);
+        }
+        t.mediaElement.originalNode.src = mediaFiles[0].src || '';
+
+        if (renderInfo === null && mediaFiles[0].src) {
+            t.mediaElement.generateError('No renderer found', mediaFiles);
+            return;
+        }
+
+        return mediaFiles[0].src ? t.mediaElement.changeRenderer(renderInfo.rendererName, mediaFiles) : null;
+    },
+        triggerAction = function triggerAction(methodName, args) {
+        try {
+            if (methodName === 'play' && t.mediaElement.rendererName === 'native_dash') {
+                var response = t.mediaElement.renderer[methodName](args);
+                if (response && typeof response.then === 'function') {
+                    response.catch(function () {
+                        if (t.mediaElement.paused) {
+                            setTimeout(function () {
+                                var tmpResponse = t.mediaElement.renderer.play();
+                                if (tmpResponse !== undefined) {
+                                    tmpResponse.catch(function () {
+                                        if (!t.mediaElement.renderer.paused) {
+                                            t.mediaElement.renderer.pause();
+                                        }
+                                    });
+                                }
+                            }, 150);
+                        }
+                    });
+                }
+            } else {
+                if (methodName === 'play' && typeof t.mediaElement.renderer[methodName](args).then == 'function') return t.mediaElement.renderer[methodName](args);
+                t.mediaElement.renderer[methodName](args);
+            }
+        } catch (e) {
+            t.mediaElement.generateError(e, mediaFiles);
+        }
+    },
+        assignMethods = function assignMethods(methodName) {
+        t.mediaElement[methodName] = function () {
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
+            }
+
+            if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer[methodName] === 'function') {
+                if (t.mediaElement.promises.length) {
+                    Promise.all(t.mediaElement.promises).then(function () {
+                        return triggerAction(methodName, args);
+                    }).catch(function (e) {
+                        t.mediaElement.generateError(e, mediaFiles);
+                    });
+                } else {
+                    return triggerAction(methodName, args);
+                }
+            }
+            return null;
+        };
+    };
 
     addProperty(t.mediaElement, 'src', getSrc, setSrc);
     t.mediaElement.getSrc = getSrc;
@@ -1561,7 +1561,7 @@ var PluginDetector = exports.PluginDetector = {
 					version = axDetect(ax);
 				}
 			} catch (e) {
-                console.log(e);
+				
 			}
 		}
 		return version;
@@ -1632,7 +1632,7 @@ var FlashMediaElementRenderer = {
 					try {
 						flash.flashApi['set_' + propName](value);
 					} catch (e) {
-                        console.log(e);
+						
 					}
 				} else {
 					flash.flashApiStack.push({
@@ -1657,10 +1657,10 @@ var FlashMediaElementRenderer = {
 							try {
 								flash.flashApi['fire_' + methodName]();
 							} catch (e) {
-                                console.log(e);
+								
 							}
 						} else {
-                            console.log('flash', 'missing method', methodName);
+							
 						}
 					} else {
 						flash.flashApiStack.push({
@@ -2878,7 +2878,7 @@ var YouTubeIframeRenderer = {
 							mediaElement.dispatchEvent(event);
 							break;
 						default:
-                            console.log('youtube ' + youtube.id, propName, 'UNSUPPORTED property');
+							
 							break;
 					}
 				} else {

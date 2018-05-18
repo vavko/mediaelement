@@ -1847,7 +1847,6 @@ class MediaElementPlayer {
 	}
 
 	play () {
-        console.log(this.proxy)
 		return this.proxy.play();
 	}
 

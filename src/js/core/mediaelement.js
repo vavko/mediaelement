@@ -411,7 +411,7 @@ class MediaElement {
                             });
                         }
                     } else {
-                        if (methodName === 'play') return t.mediaElement.renderer[methodName](args);
+                        if (methodName === 'play' && typeof  t.mediaElement.renderer[methodName](args).then == 'function') return t.mediaElement.renderer[methodName](args);
                         t.mediaElement.renderer[methodName](args);
                     }
                 } catch (e) {
